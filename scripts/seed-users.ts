@@ -1,8 +1,22 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcrypt";
 
-// 계정을 발급할 학번 목록 (placeholder — 실제 명단으로 교체해서 실행)
-const studentIds = ["20231234", "20231235", "20231236", "20231237"];
+// 계정을 발급할 학번 목록은 scripts/students.json에서 읽는다.
+// 이 파일은 .gitignore에 등록되어 git에 커밋되지 않으므로,
+// 실제 배포 전 scripts/students.json을 직접 만들어서 실제 학번 배열
+// (예: ["20230001", "20230002"])로 채워야 한다.
+const studentsFilePath = path.resolve(process.cwd(), "scripts/students.json");
+
+let studentIds: string[];
+try {
+  studentIds = JSON.parse(readFileSync(studentsFilePath, "utf-8"));
+} catch {
+  throw new Error(
+    `${studentsFilePath} 파일을 읽을 수 없습니다. ["학번1", "학번2", ...] 형태의 JSON 배열로 파일을 먼저 만들어주세요.`,
+  );
+}
 
 const INITIAL_PASSWORD = "1234";
 

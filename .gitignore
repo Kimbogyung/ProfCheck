@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# seed 스크립트용 실제 학번 명단 (scripts/seed-users.ts 참고)
+scripts/students.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
