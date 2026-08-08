@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DayToggleBar from "./DayToggleBar";
 import TimeGrid from "./TimeGrid";
@@ -9,9 +10,10 @@ import type { DailyStatusEntry, TimeOffEntry } from "@/lib/types";
 
 type Props = {
   currentUserId: string;
+  isAdmin?: boolean;
 };
 
-export default function WeeklyCalendar({ currentUserId }: Props) {
+export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
   const router = useRouter();
   const [weekStart, setWeekStart] = useState(() => getCurrentWeekStart());
   const [dailyStatus, setDailyStatus] = useState<DailyStatusEntry[]>([]);
@@ -92,13 +94,23 @@ export default function WeeklyCalendar({ currentUserId }: Props) {
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 p-4">
       <header className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">교수님 주간 일정</h1>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="text-sm text-black/60 underline underline-offset-2 dark:text-white/60"
-        >
-          로그아웃
-        </button>
+        <div className="flex items-center gap-3 text-sm">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="text-black/60 underline underline-offset-2 dark:text-white/60"
+            >
+              관리자
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-black/60 underline underline-offset-2 dark:text-white/60"
+          >
+            로그아웃
+          </button>
+        </div>
       </header>
 
       <div className="flex items-center justify-center gap-2">
@@ -143,6 +155,7 @@ export default function WeeklyCalendar({ currentUserId }: Props) {
         dailyStatus={dailyStatus}
         timeOff={timeOff}
         currentUserId={currentUserId}
+        isAdmin={isAdmin}
         onCreateTimeOff={handleCreateTimeOff}
         onDeleteTimeOff={handleDeleteTimeOff}
         isLoading={isLoading}

@@ -11,6 +11,7 @@ type Props = {
   dailyStatus: DailyStatusEntry[];
   timeOff: TimeOffEntry[];
   currentUserId: string;
+  isAdmin?: boolean;
   onCreateTimeOff: (
     date: string,
     startTime: string,
@@ -43,6 +44,7 @@ export default function TimeGrid({
   dailyStatus,
   timeOff,
   currentUserId,
+  isAdmin,
   onCreateTimeOff,
   onDeleteTimeOff,
   isLoading,
@@ -68,7 +70,7 @@ export default function TimeGrid({
     const occupied = findOverlappingRecord(records, hour);
 
     if (occupied) {
-      if (occupied.createdBy === currentUserId) {
+      if (occupied.createdBy === currentUserId || isAdmin) {
         if (window.confirm("이 시간 부재를 삭제할까요?")) {
           await onDeleteTimeOff(occupied.id);
         }
@@ -119,10 +121,11 @@ export default function TimeGrid({
                 const occupied = !isOff
                   ? findOverlappingRecord(records, hour)
                   : undefined;
-                const isOwnBlock = occupied?.createdBy === currentUserId;
+                const canManage =
+                  occupied?.createdBy === currentUserId || isAdmin;
                 const isPendingStart =
                   pending?.date === date && pending.startHour === hour;
-                const isBlocked = isOff || (Boolean(occupied) && !isOwnBlock);
+                const isBlocked = isOff || (Boolean(occupied) && !canManage);
 
                 return (
                   <button
