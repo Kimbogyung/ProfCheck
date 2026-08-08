@@ -9,69 +9,69 @@
 
 ## 0. 확정된 결정 사항
 
-- 기술 스택: Next.js(App Router, TypeScript) + Tailwind CSS + Prisma + PostgreSQL(Neon 또는 Vercel Postgres)
-- 인증: 커스텀 인증 (학번 로그인 + bcrypt 비밀번호 해시 + 세션/JWT)
+- 기술 스택: Next.js(App Router, TypeScript) + Tailwind CSS + Supabase(PostgreSQL, `@supabase/supabase-js` 직접 사용)
+- 인증: 커스텀 인증 (학번 로그인 + bcrypt 비밀번호 해시 + 세션/JWT). Supabase Auth는 사용하지 않고, `users` 테이블을 직접 관리.
+- DB 접근: 모든 DB 접근은 Next.js API 라우트(서버)에서만 수행. `SUPABASE_SERVICE_ROLE_KEY`로 서버 전용 클라이언트를 만들어 사용하고, 클라이언트(브라우저)에서 Supabase에 직접 접근하지 않음 → RLS(Row Level Security) 정책을 별도로 설계할 필요 없이 API 라우트에서 권한 체크로 대체.
 - 배포: Vercel
 - 캘린더 범위: 월~일 7일, 09:00~21:00
 
+> 변경 이력: 최초에는 Prisma + PostgreSQL로 설계했으나, Vercel 배포 중 Prisma 7.x의 스키마 설정 방식 변경(breaking change)으로 인한 빌드 실패를 겪은 뒤 Supabase 직접 연동 방식으로 전환 (cravemap 프로젝트에서 검증된 패턴).
+
 ---
 
-## 1. DB 스키마 (Prisma)
+## 1. DB 스키마 (Supabase SQL)
 
-```prisma
-enum Role {
-  MEMBER
-  ADMIN
-}
+Supabase 프로젝트의 SQL Editor에서 아래 스크립트를 그대로 실행해 테이블을 생성한다.
 
-enum DayStatus {
-  ON
-  OFF
-}
+```sql
+create extension if not exists pgcrypto;
 
-model User {
-  id              String   @id @default(cuid())
-  studentId       String   @unique        // 로그인 ID = 학번
-  passwordHash    String
-  role            Role     @default(MEMBER)
-  passwordChanged Boolean  @default(false) // 최초 비번 변경 완료 여부
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+create type role as enum ('MEMBER', 'ADMIN');
+create type day_status as enum ('ON', 'OFF');
 
-  dailyStatusUpdates DailyStatus[] @relation("DailyStatusUpdatedBy")
-  timeOffCreated     TimeOff[]     @relation("TimeOffCreatedBy")
-  timeOffUpdated     TimeOff[]     @relation("TimeOffUpdatedBy")
-}
+create table users (
+  id               uuid primary key default gen_random_uuid(),
+  student_id       text unique not null,      -- 로그인 ID = 학번
+  password_hash    text not null,
+  role             role not null default 'MEMBER',
+  password_changed boolean not null default false, -- 최초 비번 변경 완료 여부
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
 
-model DailyStatus {
-  id        String    @id @default(cuid())
-  date      DateTime  @unique @db.Date   // 하루 1개 레코드
-  status    DayStatus @default(ON)
-  updatedBy String
-  updater   User      @relation("DailyStatusUpdatedBy", fields: [updatedBy], references: [id])
-  updatedAt DateTime  @updatedAt
-}
+create table daily_status (
+  id         uuid primary key default gen_random_uuid(),
+  date       date unique not null,             -- 날짜당 1행만 존재
+  status     day_status not null default 'ON',
+  updated_by uuid not null references users(id),
+  updated_at timestamptz not null default now()
+);
 
-model TimeOff {
-  id        String   @id @default(cuid())
-  date      DateTime @db.Date
-  startTime DateTime            // date + 시:분 결합된 timestamp
-  endTime   DateTime
-  createdBy String
-  creator   User     @relation("TimeOffCreatedBy", fields: [createdBy], references: [id])
-  createdAt DateTime @default(now())
-  updatedBy String?
-  updater   User?    @relation("TimeOffUpdatedBy", fields: [updatedBy], references: [id])
-  updatedAt DateTime @updatedAt
+create table time_off (
+  id         uuid primary key default gen_random_uuid(),
+  date       date not null,
+  start_time timestamptz not null,             -- date + 시:분 결합
+  end_time   timestamptz not null,
+  created_by uuid not null references users(id),
+  created_at timestamptz not null default now(),
+  updated_by uuid references users(id),
+  updated_at timestamptz not null default now()
+);
 
-  @@index([date])
-}
+create index idx_time_off_date on time_off(date);
+
+-- RLS는 활성화하되, 서버(API 라우트)에서 service_role 키로만 접근하므로
+-- 별도 정책(policy)을 추가하지 않아도 service_role은 RLS를 우회한다.
+alter table users enable row level security;
+alter table daily_status enable row level security;
+alter table time_off enable row level security;
 ```
 
 비고
-- `DailyStatus`는 날짜당 1행만 존재 (unique). 레코드가 없으면 기본값은 `ON`으로 간주(애플리케이션 레벨에서 처리하거나, 주 시작 시 7일치를 미리 생성해두는 방식 중 선택).
-- `TimeOff.startTime/endTime`은 09:00~21:00 범위, `startTime < endTime` 검증은 API 레벨에서 수행.
+- `daily_status`는 날짜당 1행만 존재 (unique). 레코드가 없으면 애플리케이션 레벨에서 기본값 `ON`으로 간주(레코드 부재 = ON), 또는 주 시작 시 7일치를 미리 insert 해두는 방식 중 선택.
+- `time_off.start_time/end_time`은 09:00~21:00 범위, `start_time < end_time` 검증은 API 레벨에서 수행.
 - 사유·장소 등 PRD 7.3에서 명시적으로 제외한 필드는 스키마에 포함하지 않음.
+- 클라이언트(브라우저)는 Supabase에 직접 접근하지 않고 항상 Next.js API 라우트를 거치므로, RLS policy를 세밀하게 만들 필요 없이 `SUPABASE_SERVICE_ROLE_KEY`로 서버에서만 접근한다.
 
 ---
 
@@ -179,10 +179,10 @@ POST /api/time-off { date, startTime, endTime }
     /time-off/[id]/route.ts
     /admin/users/route.ts
 /lib
-  /prisma.ts                    # Prisma client 싱글턴
+  /supabase.ts                  # Supabase 서버 전용 클라이언트 싱글턴 (service role key 사용)
   /auth.ts                      # 세션 검증, 비밀번호 해시 유틸
-/prisma
-  /schema.prisma
+/supabase
+  /schema.sql                   # 1절의 테이블 생성 스크립트 (Supabase SQL Editor에 실행)
 /components
   /WeeklyCalendar.tsx
   /DayToggleBar.tsx
@@ -196,9 +196,12 @@ POST /api/time-off { date, startTime, endTime }
 ## 6. 환경 변수
 
 ```
-DATABASE_URL=            # Neon/Vercel Postgres 연결 문자열
-SESSION_SECRET=          # 세션/JWT 서명용 시크릿
+NEXT_PUBLIC_SUPABASE_URL=      # Supabase 프로젝트 URL
+SUPABASE_SERVICE_ROLE_KEY=     # 서버 전용 키. RLS를 우회하므로 절대 클라이언트에 노출 금지 (NEXT_PUBLIC_ 접두어 붙이지 않음)
+SESSION_SECRET=                # 커스텀 세션/JWT 서명용 시크릿
 ```
+
+두 값(`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) 모두 Supabase 대시보드 → Project Settings → API 메뉴에서 확인할 수 있다.
 
 ---
 
