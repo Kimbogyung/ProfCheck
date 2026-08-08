@@ -2,21 +2,40 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcrypt";
+import { z } from "zod";
 
 // 계정을 발급할 학번 목록은 scripts/students.json에서 읽는다.
 // 이 파일은 .gitignore에 등록되어 git에 커밋되지 않으므로,
-// 실제 배포 전 scripts/students.json을 직접 만들어서 실제 학번 배열
-// (예: ["20230001", "20230002"])로 채워야 한다.
+// 실제 배포 전 scripts/students.json을 직접 만들어서
+// [{ "studentId": "학번1", "role": "ADMIN" }, { "studentId": "학번2" }, ...]
+// 형태(role 생략 시 MEMBER)로 채워야 한다.
 const studentsFilePath = path.resolve(process.cwd(), "scripts/students.json");
 
-let studentIds: string[];
+let rawStudents: unknown;
 try {
-  studentIds = JSON.parse(readFileSync(studentsFilePath, "utf-8"));
+  rawStudents = JSON.parse(readFileSync(studentsFilePath, "utf-8"));
 } catch {
   throw new Error(
-    `${studentsFilePath} 파일을 읽을 수 없습니다. ["학번1", "학번2", ...] 형태의 JSON 배열로 파일을 먼저 만들어주세요.`,
+    `${studentsFilePath} 파일을 읽을 수 없습니다. [{ "studentId": "학번1", "role": "ADMIN" }, ...] 형태의 JSON 배열로 파일을 먼저 만들어주세요.`,
   );
 }
+
+const studentEntrySchema = z.object({
+  studentId: z.string().min(1),
+  role: z.enum(["MEMBER", "ADMIN"]).optional(),
+});
+
+const parsedStudents = z.array(studentEntrySchema).safeParse(rawStudents);
+if (!parsedStudents.success) {
+  const details = parsedStudents.error.issues
+    .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+    .join("; ");
+  throw new Error(
+    `${studentsFilePath} 형식이 올바르지 않습니다 — ${details}`,
+  );
+}
+
+const students = parsedStudents.data;
 
 const INITIAL_PASSWORD = "1234";
 
@@ -40,10 +59,10 @@ async function main() {
   const { data, error } = await supabase
     .from("users")
     .upsert(
-      studentIds.map((studentId) => ({
+      students.map(({ studentId, role }) => ({
         student_id: studentId,
         password_hash: passwordHash,
-        role: "MEMBER",
+        role: role ?? "MEMBER",
         password_changed: false,
       })),
       { onConflict: "student_id", ignoreDuplicates: true },
@@ -56,10 +75,10 @@ async function main() {
   }
 
   const createdIds = new Set((data ?? []).map((row) => row.student_id));
-  for (const studentId of studentIds) {
+  for (const { studentId, role } of students) {
     console.log(
       createdIds.has(studentId)
-        ? `[${studentId}] 계정 생성 완료 (초기 비밀번호: ${INITIAL_PASSWORD})`
+        ? `[${studentId}] 계정 생성 완료 (role: ${role ?? "MEMBER"}, 초기 비밀번호: ${INITIAL_PASSWORD})`
         : `[${studentId}] 이미 존재하는 계정 — 건너뜀`,
     );
   }
