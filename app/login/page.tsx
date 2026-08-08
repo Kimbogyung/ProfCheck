@@ -40,12 +40,10 @@ export default function LoginPage() {
     <main className="flex flex-1 items-center justify-center bg-background px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-surface p-8 shadow-sm"
+        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-surface p-8"
       >
         <div className="text-center">
-          <span className="font-serif text-2xl font-semibold text-text">
-            ProfCheck
-          </span>
+          <span className="text-2xl font-bold text-text">ProfCheck</span>
           <p className="mt-1 text-sm text-text-soft">로그인</p>
         </div>
 
@@ -90,7 +88,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-full bg-primary px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+          className="w-full rounded-lg bg-primary px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
         >
           {isSubmitting ? "로그인 중..." : "로그인"}
         </button>

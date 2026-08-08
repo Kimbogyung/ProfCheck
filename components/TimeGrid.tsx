@@ -126,12 +126,7 @@ export default function TimeGrid({
                 const isPendingStart =
                   pending?.date === date && pending.startHour === hour;
                 const isBlocked = isOff || (Boolean(occupied) && !canManage);
-
-                const colorClass = isOff
-                  ? "border-transparent bg-dayoff"
-                  : occupied
-                    ? "border-timeoff-border bg-timeoff"
-                    : "border-border bg-surface";
+                const isAbsent = isOff || Boolean(occupied);
 
                 return (
                   <button
@@ -140,9 +135,11 @@ export default function TimeGrid({
                     disabled={isLoading || isBlocked}
                     onClick={() => handleCellClick(date, hour)}
                     aria-label={`${date} ${pad2(hour)}:00`}
-                    className={`h-7 border transition-colors ${
-                      occupied && !isOff ? "rounded-md" : "rounded-[4px]"
-                    } ${colorClass} ${
+                    className={`h-7 rounded-lg border transition-colors ${
+                      isAbsent
+                        ? "border-transparent bg-absence"
+                        : "border-border bg-surface"
+                    } ${
                       isPendingStart
                         ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
                         : ""

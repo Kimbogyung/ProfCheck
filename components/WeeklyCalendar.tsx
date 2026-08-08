@@ -94,11 +94,9 @@ export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
 
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-10">
         <div className="text-center">
-          <h1 className="font-serif text-2xl font-semibold text-text">
-            이번 주 교수님 일정
-          </h1>
+          <h1 className="text-2xl font-bold text-text">이번 주 교수님 일정</h1>
           <p className="mt-1.5 text-sm text-text-soft">
-            색이 칠해진 시간대만 부재로 확인된 시간입니다
+            색이 칠해진 시간대만 부재로 확인된 시간이에요
           </p>
         </div>
 
@@ -115,7 +113,7 @@ export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
             type="button"
             title="이번 주로 돌아가기"
             onClick={() => setWeekStart(getCurrentWeekStart())}
-            className="rounded-full bg-primary-light px-4 py-1.5 text-sm font-medium text-text transition-colors hover:bg-primary/25"
+            className="rounded-lg bg-primary-light px-4 py-1.5 text-sm font-medium text-text transition-colors hover:bg-primary/15"
           >
             {formatWeekRangeLabel(weekDates)}
           </button>
@@ -133,7 +131,7 @@ export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
           <p className="text-center text-sm text-red-500">{error}</p>
         )}
 
-        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-6">
+        <div className="rounded-2xl border border-border bg-surface p-4 sm:p-6">
           <DayToggleBar
             weekDates={weekDates}
             dailyStatus={dailyStatus}
@@ -153,21 +151,6 @@ export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
             onDeleteTimeOff={handleDeleteTimeOff}
             isLoading={isLoading}
           />
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-text-soft">
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm border border-border bg-surface" />
-            기본(정보 없음)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm border border-timeoff-border bg-timeoff" />
-            특정 시간 부재
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-dayoff" />
-            종일 부재
-          </span>
         </div>
       </div>
     </div>

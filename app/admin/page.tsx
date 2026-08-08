@@ -69,14 +69,12 @@ export default function AdminPage() {
       <AppHeader />
 
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-10">
-        <h1 className="font-serif text-2xl font-semibold text-text">
-          사용자 관리
-        </h1>
+        <h1 className="text-2xl font-bold text-text">사용자 관리</h1>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
         {message && <p className="text-sm text-text-soft">{message}</p>}
 
-        <div className="overflow-x-auto rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-6">
+        <div className="overflow-x-auto rounded-2xl border border-border bg-surface p-4 sm:p-6">
           <table className="w-full min-w-[520px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-border text-text-soft">
@@ -101,7 +99,7 @@ export default function AdminPage() {
                       type="button"
                       disabled={resettingId === user.id}
                       onClick={() => handleResetPassword(user)}
-                      className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-soft transition-colors hover:bg-primary-light disabled:opacity-50"
+                      className="rounded-lg border border-border px-3 py-1 text-xs font-medium text-text-soft transition-colors hover:bg-primary-light disabled:opacity-50"
                     >
                       비밀번호 초기화
                     </button>
