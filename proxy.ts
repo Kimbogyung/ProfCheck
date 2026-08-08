@@ -3,7 +3,7 @@ import { jwtVerify } from "jose";
 import { SESSION_COOKIE_NAME } from "@/lib/session-cookie";
 import type { SessionPayload } from "@/lib/auth";
 
-// middleware는 Edge Runtime에서 실행되므로 lib/auth.ts(bcrypt, next/headers 의존)를
+// proxy는 Edge Runtime에서 실행되므로 lib/auth.ts(bcrypt, next/headers 의존)를
 // 그대로 불러올 수 없다. jose(JWT 검증)만 여기서 직접 다시 구현한다.
 async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   const secret = process.env.SESSION_SECRET;
@@ -20,7 +20,7 @@ function isPublicPath(pathname: string): boolean {
   return pathname === "/login" || pathname.startsWith("/api/auth/");
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isPublicPath(pathname)) {
