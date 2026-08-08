@@ -37,15 +37,23 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4">
+    <main className="flex flex-1 items-center justify-center bg-background px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 rounded-lg border border-black/10 p-6 dark:border-white/10"
+        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-surface p-8 shadow-sm"
       >
-        <h1 className="text-xl font-semibold">로그인</h1>
+        <div className="text-center">
+          <span className="font-serif text-2xl font-semibold text-text">
+            ProfCheck
+          </span>
+          <p className="mt-1 text-sm text-text-soft">로그인</p>
+        </div>
 
-        <div className="space-y-1">
-          <label htmlFor="studentId" className="block text-sm font-medium">
+        <div className="space-y-1.5">
+          <label
+            htmlFor="studentId"
+            className="block text-sm font-medium text-text"
+          >
             학번
           </label>
           <input
@@ -55,12 +63,15 @@ export default function LoginPage() {
             autoComplete="username"
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
-            className="w-full rounded-md border border-black/20 px-3 py-2 text-sm outline-none focus:border-black dark:border-white/20 dark:focus:border-white"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text outline-none focus:border-primary"
           />
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="password" className="block text-sm font-medium">
+        <div className="space-y-1.5">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-text"
+          >
             비밀번호
           </label>
           <input
@@ -70,16 +81,16 @@ export default function LoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-black/20 px-3 py-2 text-sm outline-none focus:border-black dark:border-white/20 dark:focus:border-white"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text outline-none focus:border-primary"
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-500">{error}</p>}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          className="w-full rounded-full bg-primary px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
         >
           {isSubmitting ? "로그인 중..." : "로그인"}
         </button>

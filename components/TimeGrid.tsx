@@ -98,8 +98,8 @@ export default function TimeGrid({
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <p className="h-4 text-center text-xs text-black/60 dark:text-white/60">
+    <div className="flex flex-col gap-2">
+      <p className="h-4 text-center text-xs text-text-soft">
         {pending
           ? "종료 시간을 클릭하면 부재로 등록됩니다. 다른 날짜를 클릭하면 취소됩니다."
           : ""}
@@ -110,9 +110,9 @@ export default function TimeGrid({
           {HOURS.map((hour) => (
             <div
               key={hour}
-              className="grid grid-cols-[64px_repeat(7,1fr)] gap-1 py-0.5"
+              className="grid grid-cols-[64px_repeat(7,1fr)] items-center gap-1.5 py-[3px]"
             >
-              <div className="flex items-center justify-end pr-2 text-xs text-black/50 dark:text-white/50">
+              <div className="flex items-center justify-end pr-2 text-xs text-text-soft">
                 {pad2(hour)}:00
               </div>
               {weekDates.map((date) => {
@@ -127,6 +127,12 @@ export default function TimeGrid({
                   pending?.date === date && pending.startHour === hour;
                 const isBlocked = isOff || (Boolean(occupied) && !canManage);
 
+                const colorClass = isOff
+                  ? "border-transparent bg-dayoff"
+                  : occupied
+                    ? "border-timeoff-border bg-timeoff"
+                    : "border-border bg-surface";
+
                 return (
                   <button
                     key={date}
@@ -134,18 +140,16 @@ export default function TimeGrid({
                     disabled={isLoading || isBlocked}
                     onClick={() => handleCellClick(date, hour)}
                     aria-label={`${date} ${pad2(hour)}:00`}
-                    className={`h-7 rounded-sm border transition-colors ${
-                      isOff || occupied
-                        ? "bg-rose-200 dark:bg-rose-950"
-                        : "bg-white dark:bg-transparent"
-                    } ${
+                    className={`h-7 border transition-colors ${
+                      occupied && !isOff ? "rounded-md" : "rounded-[4px]"
+                    } ${colorClass} ${
                       isPendingStart
-                        ? "ring-2 ring-blue-500"
-                        : "border-black/10 dark:border-white/10"
+                        ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                        : ""
                     } ${
                       isBlocked
                         ? "cursor-not-allowed"
-                        : "cursor-pointer hover:border-black/30 dark:hover:border-white/30"
+                        : "cursor-pointer hover:border-primary/50"
                     }`}
                   />
                 );

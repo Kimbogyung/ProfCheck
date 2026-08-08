@@ -21,10 +21,8 @@ export default function DayToggleBar({
   );
 
   return (
-    <div className="grid grid-cols-[64px_repeat(7,1fr)] gap-1 text-center text-sm">
-      <div className="flex items-center justify-center text-xs font-medium text-black/60 dark:text-white/60">
-        전체
-      </div>
+    <div className="grid grid-cols-[64px_repeat(7,1fr)] items-center gap-1.5">
+      <span className="text-xs font-medium text-text-soft">전체 부재</span>
       {weekDates.map((date) => {
         const status = statusByDate.get(date) ?? "ON";
         const isOff = status === "OFF";
@@ -34,17 +32,21 @@ export default function DayToggleBar({
             type="button"
             disabled={isLoading}
             onClick={() => onToggle(date, isOff ? "ON" : "OFF")}
-            className={`rounded-md border px-1 py-1.5 font-medium transition-colors disabled:opacity-50 ${
-              isOff
-                ? "border-rose-300 bg-rose-100 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                : "border-black/15 bg-white text-black/70 dark:border-white/15 dark:bg-transparent dark:text-white/70"
-            }`}
+            className="flex flex-col items-center gap-1.5 rounded-lg py-1.5 transition-opacity disabled:opacity-50"
           >
-            <div>{getWeekdayLabel(date)}</div>
-            <div className="text-[11px] opacity-70">
+            <span className="text-xs font-medium text-text">
+              {getWeekdayLabel(date)}
+            </span>
+            <span className="text-[10px] text-text-soft">
               {date.slice(5).replace("-", "/")}
-            </div>
-            <div className="mt-0.5 text-[10px]">{status}</div>
+            </span>
+            <span
+              className={`flex h-5 w-9 items-center rounded-full px-0.5 transition-colors ${
+                isOff ? "justify-end bg-primary" : "justify-start bg-primary-light"
+              }`}
+            >
+              <span className="h-4 w-4 rounded-full bg-white shadow-sm" />
+            </span>
           </button>
         );
       })}

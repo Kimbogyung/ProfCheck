@@ -1,11 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import AppHeader from "./AppHeader";
 import DayToggleBar from "./DayToggleBar";
 import TimeGrid from "./TimeGrid";
-import { getCurrentWeekStart, getWeekDates, shiftWeek } from "@/lib/week";
+import {
+  formatWeekRangeLabel,
+  getCurrentWeekStart,
+  getWeekDates,
+  shiftWeek,
+} from "@/lib/week";
 import type { DailyStatusEntry, TimeOffEntry } from "@/lib/types";
 
 type Props = {
@@ -14,7 +18,6 @@ type Props = {
 };
 
 export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
-  const router = useRouter();
   const [weekStart, setWeekStart] = useState(() => getCurrentWeekStart());
   const [dailyStatus, setDailyStatus] = useState<DailyStatusEntry[]>([]);
   const [timeOff, setTimeOff] = useState<TimeOffEntry[]>([]);
@@ -44,7 +47,7 @@ export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
   }, [weekStart]);
 
   useEffect(() => {
-    // weekStart가 바뀔 때마다 서버 데이터를 다시 가져온다 (외부 API 동기화이지 렌더 중 setState가 아님).
+    // weekStart가 바뀔 때마다 서버 데이터를 다시 가져온다 (외부 API 동기화이지 렌더 중 setState가 아니다).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refetch();
   }, [refetch]);
@@ -85,81 +88,88 @@ export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
     }
   }
 
-  async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  }
-
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 p-4">
-      <header className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">교수님 주간 일정</h1>
-        <div className="flex items-center gap-3 text-sm">
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className="text-black/60 underline underline-offset-2 dark:text-white/60"
-            >
-              관리자
-            </Link>
-          )}
+    <div className="flex flex-1 flex-col bg-background">
+      <AppHeader showAdminLink={isAdmin} />
+
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-10">
+        <div className="text-center">
+          <h1 className="font-serif text-2xl font-semibold text-text">
+            이번 주 교수님 일정
+          </h1>
+          <p className="mt-1.5 text-sm text-text-soft">
+            색이 칠해진 시간대만 부재로 확인된 시간입니다
+          </p>
+        </div>
+
+        <div className="flex items-center justify-center gap-3">
           <button
             type="button"
-            onClick={handleLogout}
-            className="text-black/60 underline underline-offset-2 dark:text-white/60"
+            aria-label="이전 주"
+            onClick={() => setWeekStart((w) => shiftWeek(w, -1))}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light"
           >
-            로그아웃
+            ‹
+          </button>
+          <button
+            type="button"
+            title="이번 주로 돌아가기"
+            onClick={() => setWeekStart(getCurrentWeekStart())}
+            className="rounded-full bg-primary-light px-4 py-1.5 text-sm font-medium text-text transition-colors hover:bg-primary/25"
+          >
+            {formatWeekRangeLabel(weekDates)}
+          </button>
+          <button
+            type="button"
+            aria-label="다음 주"
+            onClick={() => setWeekStart((w) => shiftWeek(w, 1))}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light"
+          >
+            ›
           </button>
         </div>
-      </header>
 
-      <div className="flex items-center justify-center gap-2">
-        <button
-          type="button"
-          onClick={() => setWeekStart((w) => shiftWeek(w, -1))}
-          className="rounded-md border border-black/15 px-3 py-1.5 text-sm dark:border-white/15"
-        >
-          이전 주
-        </button>
-        <button
-          type="button"
-          onClick={() => setWeekStart(getCurrentWeekStart())}
-          className="rounded-md border border-black/15 px-3 py-1.5 text-sm dark:border-white/15"
-        >
-          이번 주로 돌아가기
-        </button>
-        <button
-          type="button"
-          onClick={() => setWeekStart((w) => shiftWeek(w, 1))}
-          className="rounded-md border border-black/15 px-3 py-1.5 text-sm dark:border-white/15"
-        >
-          다음 주
-        </button>
+        {error && (
+          <p className="text-center text-sm text-red-500">{error}</p>
+        )}
+
+        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-6">
+          <DayToggleBar
+            weekDates={weekDates}
+            dailyStatus={dailyStatus}
+            onToggle={handleToggleDay}
+            isLoading={isLoading}
+          />
+
+          <div className="my-4 border-t border-border" />
+
+          <TimeGrid
+            weekDates={weekDates}
+            dailyStatus={dailyStatus}
+            timeOff={timeOff}
+            currentUserId={currentUserId}
+            isAdmin={isAdmin}
+            onCreateTimeOff={handleCreateTimeOff}
+            onDeleteTimeOff={handleDeleteTimeOff}
+            isLoading={isLoading}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-text-soft">
+          <span className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm border border-border bg-surface" />
+            기본(정보 없음)
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm border border-timeoff-border bg-timeoff" />
+            특정 시간 부재
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm bg-dayoff" />
+            종일 부재
+          </span>
+        </div>
       </div>
-
-      <p className="text-center text-sm text-black/60 dark:text-white/60">
-        {weekDates[0]} ~ {weekDates[6]}
-      </p>
-
-      {error && <p className="text-center text-sm text-red-600">{error}</p>}
-
-      <DayToggleBar
-        weekDates={weekDates}
-        dailyStatus={dailyStatus}
-        onToggle={handleToggleDay}
-        isLoading={isLoading}
-      />
-
-      <TimeGrid
-        weekDates={weekDates}
-        dailyStatus={dailyStatus}
-        timeOff={timeOff}
-        currentUserId={currentUserId}
-        isAdmin={isAdmin}
-        onCreateTimeOff={handleCreateTimeOff}
-        onDeleteTimeOff={handleDeleteTimeOff}
-        isLoading={isLoading}
-      />
     </div>
   );
 }

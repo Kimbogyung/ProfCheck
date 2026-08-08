@@ -37,3 +37,12 @@ export function getWeekdayLabel(dateStr: string): string {
   const date = new Date(Date.UTC(year, month - 1, day));
   return WEEKDAY_LABELS[date.getUTCDay()];
 }
+
+// 7일치 weekDates를 "2026년 8월 10일 (월) – 8월 16일 (일)" 형태로 표시한다.
+export function formatWeekRangeLabel(weekDates: string[]): string {
+  const [startYear, startMonth, startDay] = weekDates[0].split("-").map(Number);
+  const [, endMonth, endDay] = weekDates[6].split("-").map(Number);
+  const startWeekday = getWeekdayLabel(weekDates[0]);
+  const endWeekday = getWeekdayLabel(weekDates[6]);
+  return `${startYear}년 ${startMonth}월 ${startDay}일 (${startWeekday}) – ${endMonth}월 ${endDay}일 (${endWeekday})`;
+}
