@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { clearSessionCookie } from "@/lib/auth";
 
 export async function POST() {
-  return NextResponse.json({ message: "Not implemented" }, { status: 501 });
+  await clearSessionCookie();
+  return NextResponse.json({ success: true });
 }
