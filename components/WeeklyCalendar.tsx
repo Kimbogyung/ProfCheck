@@ -30,6 +30,7 @@ export default function WeeklyCalendar({
   const [error, setError] = useState<string | null>(null);
 
   const weekDates = getWeekDates(weekStart);
+  const isCurrentWeek = weekStart === getCurrentWeekStart();
 
   const refetch = useCallback(async () => {
     setIsLoading(true);
@@ -119,7 +120,11 @@ export default function WeeklyCalendar({
               type="button"
               title="이번 주로 돌아가기"
               onClick={() => setWeekStart(getCurrentWeekStart())}
-              className="rounded-lg bg-primary-light px-4 py-1.5 text-sm font-medium text-text transition-colors hover:bg-primary/15"
+              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors hover:bg-primary/15 ${
+                isCurrentWeek
+                  ? "bg-primary-light-active text-primary-hover"
+                  : "bg-primary-light text-text"
+              }`}
             >
               {formatWeekRangeLabel(weekDates)}
             </button>
