@@ -100,22 +100,17 @@ export default function TimeGrid({
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="h-4 text-center text-xs text-text-soft">
-        {pending
-          ? "종료 시간을 클릭하면 부재로 등록됩니다. 다른 날짜를 클릭하면 취소됩니다."
-          : ""}
-      </p>
-
       <div className="overflow-x-auto">
-        <div className="min-w-[560px]">
+        <div className="min-w-[560px] pt-3">
           {HOURS.map((hour) => (
             <div
               key={hour}
-              className="grid grid-cols-[64px_repeat(7,1fr)] items-center gap-1.5 py-[3px]"
+              className="relative grid grid-cols-[64px_repeat(7,1fr)] items-center gap-1.5 border-t border-border py-[3px]"
             >
-              <div className="flex items-center justify-end pr-2 text-xs text-text-soft">
+              <span className="pointer-events-none absolute left-0 top-0 z-10 w-16 -translate-y-1/2 truncate bg-surface pr-2 text-right text-xs text-text-soft">
                 {pad2(hour)}:00
-              </div>
+              </span>
+              <div />
               {weekDates.map((date) => {
                 const dailyEntry = dailyStatusByDate.get(date);
                 const isOff = dailyEntry?.status === "OFF";
@@ -157,10 +152,8 @@ export default function TimeGrid({
                       disabled={isLoading}
                       onClick={() => handleCellClick(date, hour)}
                       aria-label={`${date} ${pad2(hour)}:00`}
-                      className={`h-7 w-full rounded-lg border transition-colors ${
-                        isAbsent
-                          ? "border-transparent bg-absence"
-                          : "border-border bg-surface"
+                      className={`h-7 w-full rounded-lg border border-transparent transition-colors ${
+                        isAbsent ? "bg-absence" : "bg-surface"
                       } ${
                         isPendingStart
                           ? "ring-2 ring-primary ring-offset-1 ring-offset-canvas"
@@ -178,6 +171,12 @@ export default function TimeGrid({
           ))}
         </div>
       </div>
+
+      <p className="h-4 text-center text-xs text-text-soft">
+        {pending
+          ? "종료 시간을 클릭하면 부재로 등록됩니다. 다른 날짜를 클릭하면 취소됩니다."
+          : ""}
+      </p>
     </div>
   );
 }

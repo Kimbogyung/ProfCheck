@@ -59,13 +59,47 @@ export default function WeeklyCalendar({
   }, [refetch]);
 
   async function handleToggleDay(date: string, nextStatus: "ON" | "OFF") {
+    // optimistic: 응답을 기다리지 않고 즉시 반영한다. OFF 전환은 서버에서 해당
+    // 날짜의 time_off를 전부 삭제하므로(10.1) 로컬에서도 동일하게 미리 비운다.
+    const previousEntry = dailyStatus.find((entry) => entry.date === date);
+    const removedTimeOff =
+      nextStatus === "OFF" ? timeOff.filter((entry) => entry.date === date) : [];
+
+    setDailyStatus((prev) =>
+      prev.map((entry) =>
+        entry.date === date
+          ? {
+              date,
+              status: nextStatus,
+              updatedBy: currentUserId,
+              updatedByNickname: nickname,
+              updatedAt: new Date().toISOString(),
+            }
+          : entry,
+      ),
+    );
+    if (nextStatus === "OFF") {
+      setTimeOff((prev) => prev.filter((entry) => entry.date !== date));
+    }
+    setError(null);
+
     const res = await fetch(`/api/daily-status/${date}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: nextStatus }),
     });
-    if (res.ok) {
-      await refetch();
+
+    if (!res.ok) {
+      // 롤백: 날짜 상태와 (있었다면) 지워졌던 time_off를 원래대로 되돌린다.
+      if (previousEntry) {
+        setDailyStatus((prev) =>
+          prev.map((entry) => (entry.date === date ? previousEntry : entry)),
+        );
+      }
+      if (removedTimeOff.length > 0) {
+        setTimeOff((prev) => [...prev, ...removedTimeOff]);
+      }
+      setError("상태 변경에 실패했습니다");
     }
   }
 
@@ -74,23 +108,52 @@ export default function WeeklyCalendar({
     startTime: string,
     endTime: string,
   ): Promise<string | null> {
+    // optimistic: 임시 id로 즉시 화면에 추가하고, 서버가 준 실제 id로 나중에 교체한다.
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const optimisticEntry: TimeOffEntry = {
+      id: tempId,
+      date,
+      startTime,
+      endTime,
+      createdBy: currentUserId,
+      createdByNickname: nickname,
+      updatedBy: null,
+    };
+
+    setTimeOff((prev) => [...prev, optimisticEntry]);
+    setError(null);
+
     const res = await fetch("/api/time-off", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ date, startTime, endTime }),
     });
-    if (res.ok) {
-      await refetch();
-      return null;
+
+    if (!res.ok) {
+      setTimeOff((prev) => prev.filter((entry) => entry.id !== tempId));
+      const data = await res.json().catch(() => null);
+      return data?.message ?? "등록에 실패했습니다";
     }
-    const data = await res.json().catch(() => null);
-    return data?.message ?? "등록에 실패했습니다";
+
+    const created = await res.json();
+    setTimeOff((prev) =>
+      prev.map((entry) =>
+        entry.id === tempId ? { ...entry, id: created.id } : entry,
+      ),
+    );
+    return null;
   }
 
   async function handleDeleteTimeOff(id: string) {
+    // optimistic: 즉시 화면에서 지우고, 실패하면 되돌린다.
+    const deletedEntry = timeOff.find((entry) => entry.id === id);
+    setTimeOff((prev) => prev.filter((entry) => entry.id !== id));
+    setError(null);
+
     const res = await fetch(`/api/time-off/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      await refetch();
+    if (!res.ok && deletedEntry) {
+      setTimeOff((prev) => [...prev, deletedEntry]);
+      setError("삭제에 실패했습니다");
     }
   }
 
@@ -150,8 +213,6 @@ export default function WeeklyCalendar({
             onToggle={handleToggleDay}
             isLoading={isLoading}
           />
-
-          <div className="my-4 border-t border-border" />
 
           <TimeGrid
             weekDates={weekDates}
