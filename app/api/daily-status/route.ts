@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 import { getSessionFromCookies } from "@/lib/auth";
 import { getWeekDates } from "@/lib/week";
+import { getDisplayNameMap, resolveDisplayName } from "@/lib/user-display";
 
 const querySchema = z.object({
   weekStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -33,6 +34,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: "조회에 실패했습니다" }, { status: 500 });
   }
 
+  const displayNameByUserId = await getDisplayNameMap(
+    data.map((row) => row.updated_by),
+  );
+
   const byDate = new Map(data.map((row) => [row.date, row]));
 
   const result = dates.map((date) => {
@@ -41,6 +46,10 @@ export async function GET(request: NextRequest) {
       date,
       status: row?.status ?? "ON",
       updatedBy: row?.updated_by ?? null,
+      updatedByNickname: resolveDisplayName(
+        displayNameByUserId,
+        row?.updated_by,
+      ),
       updatedAt: row?.updated_at ?? null,
     };
   });

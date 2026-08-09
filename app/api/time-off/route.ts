@@ -9,6 +9,7 @@ import {
   combineDateAndTime,
   formatTimeOfDay,
 } from "@/lib/time-off";
+import { getDisplayNameMap, resolveDisplayName } from "@/lib/user-display";
 
 const weekQuerySchema = z.object({
   weekStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -41,6 +42,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: "조회에 실패했습니다" }, { status: 500 });
   }
 
+  const displayNameByUserId = await getDisplayNameMap(
+    data.map((row) => row.created_by),
+  );
+
   return NextResponse.json(
     data.map((row) => ({
       id: row.id,
@@ -48,6 +53,7 @@ export async function GET(request: NextRequest) {
       startTime: formatTimeOfDay(row.start_time),
       endTime: formatTimeOfDay(row.end_time),
       createdBy: row.created_by,
+      createdByNickname: resolveDisplayName(displayNameByUserId, row.created_by),
       updatedBy: row.updated_by,
     })),
   );

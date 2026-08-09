@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DailyStatusEntry, TimeOffEntry } from "@/lib/types";
+import AttributionTooltip from "@/components/AttributionTooltip";
 
 // 09:00~21:00을 1시간 단위 12개 블록으로 표현한다.
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 9);
@@ -51,8 +52,8 @@ export default function TimeGrid({
 }: Props) {
   const [pending, setPending] = useState<PendingSelection | null>(null);
 
-  const statusByDate = new Map(
-    dailyStatus.map((entry) => [entry.date, entry.status]),
+  const dailyStatusByDate = new Map(
+    dailyStatus.map((entry) => [entry.date, entry]),
   );
 
   const timeOffByDate = new Map<string, TimeOffEntry[]>();
@@ -64,7 +65,7 @@ export default function TimeGrid({
 
   async function handleCellClick(date: string, hour: number) {
     if (isLoading) return;
-    if (statusByDate.get(date) === "OFF") return;
+    if (dailyStatusByDate.get(date)?.status === "OFF") return;
 
     const records = timeOffByDate.get(date) ?? [];
     const occupied = findOverlappingRecord(records, hour);
@@ -116,7 +117,8 @@ export default function TimeGrid({
                 {pad2(hour)}:00
               </div>
               {weekDates.map((date) => {
-                const isOff = statusByDate.get(date) === "OFF";
+                const dailyEntry = dailyStatusByDate.get(date);
+                const isOff = dailyEntry?.status === "OFF";
                 const records = timeOffByDate.get(date) ?? [];
                 const occupied = !isOff
                   ? findOverlappingRecord(records, hour)
@@ -127,28 +129,49 @@ export default function TimeGrid({
                   pending?.date === date && pending.startHour === hour;
                 const isBlocked = isOff || (Boolean(occupied) && !canManage);
                 const isAbsent = isOff || Boolean(occupied);
+                // 이 셀이 빨갛게 칠해진 이유(종일 OFF가 우선, 아니면 특정 시간 부재)에
+                // 맞는 등록자 닉네임을 라벨로 쓴다.
+                const attributionNickname = isOff
+                  ? dailyEntry?.updatedByNickname
+                  : occupied?.createdByNickname;
+                const tooltipLabel = attributionNickname
+                  ? `${attributionNickname}님이 등록`
+                  : null;
+                // 맨 위 2개 행(09:00, 10:00)은 위쪽에 띄우면 화면 밖으로 잘리므로 아래쪽에 표시한다.
+                const tooltipPlacement =
+                  hour < HOURS[0] + 2 ? "bottom" : "top";
 
                 return (
-                  <button
+                  <AttributionTooltip
                     key={date}
-                    type="button"
-                    disabled={isLoading || isBlocked}
-                    onClick={() => handleCellClick(date, hour)}
-                    aria-label={`${date} ${pad2(hour)}:00`}
-                    className={`h-7 rounded-lg border transition-colors ${
-                      isAbsent
-                        ? "border-transparent bg-absence"
-                        : "border-border bg-surface"
-                    } ${
-                      isPendingStart
-                        ? "ring-2 ring-primary ring-offset-1 ring-offset-canvas"
-                        : ""
-                    } ${
-                      isBlocked
-                        ? "cursor-not-allowed"
-                        : "cursor-pointer hover:border-primary/50"
-                    }`}
-                  />
+                    label={tooltipLabel}
+                    placement={tooltipPlacement}
+                    className="w-full"
+                  >
+                    <button
+                      type="button"
+                      // "편집 불가" 셀(종일 OFF, 타인 소유 등)도 handleCellClick 내부
+                      // 가드가 이미 안전하게 아무 동작도 하지 않으므로, native disabled는
+                      // 로딩 중일 때만 걸어서 hover/모바일 탭으로 항상 툴팁을 볼 수 있게
+                      // 한다. isBlocked는 시각적 스타일(cursor-not-allowed)에만 쓴다.
+                      disabled={isLoading}
+                      onClick={() => handleCellClick(date, hour)}
+                      aria-label={`${date} ${pad2(hour)}:00`}
+                      className={`h-7 w-full rounded-lg border transition-colors ${
+                        isAbsent
+                          ? "border-transparent bg-absence"
+                          : "border-border bg-surface"
+                      } ${
+                        isPendingStart
+                          ? "ring-2 ring-primary ring-offset-1 ring-offset-canvas"
+                          : ""
+                      } ${
+                        isBlocked
+                          ? "cursor-not-allowed"
+                          : "cursor-pointer hover:border-primary/50"
+                      }`}
+                    />
+                  </AttributionTooltip>
                 );
               })}
             </div>

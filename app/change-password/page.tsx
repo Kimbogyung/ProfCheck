@@ -17,7 +17,7 @@ export default function ChangePasswordPage() {
     setError(null);
 
     if (nickname.trim().length === 0) {
-      setError("닉네임을 입력해주세요");
+      setError("이름을 입력해주세요");
       return;
     }
     if (newPassword === "1234") {
@@ -72,8 +72,7 @@ export default function ChangePasswordPage() {
         <div className="text-center">
           <h1 className="text-lg font-bold text-text">최초 설정</h1>
           <p className="mt-1 text-sm text-text-soft">
-            최초 로그인 시에는 닉네임 설정과 비밀번호 변경을 모두 완료해야
-            합니다.
+            최초 로그인 시에는 이름 설정과 비밀번호 변경을 모두 완료해야 합니다.
           </p>
         </div>
 
