@@ -99,7 +99,7 @@ export default function WeeklyCalendar({
       <AppHeader nickname={nickname} showAdminLink={isAdmin} />
 
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-8">
-        <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:flex-row sm:items-center max-[480px]:p-3">
           <div>
             <p className="text-lg font-bold text-text">이번 주 교수님 일정</p>
             <p className="mt-1 text-sm text-text-soft">
@@ -107,12 +107,12 @@ export default function WeeklyCalendar({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 max-[480px]:w-full max-[480px]:flex-wrap max-[480px]:justify-center max-[480px]:gap-1.5">
             <button
               type="button"
               aria-label="이전 주"
               onClick={() => setWeekStart((w) => shiftWeek(w, -1))}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light max-[480px]:h-8 max-[480px]:w-8"
             >
               ‹
             </button>
@@ -120,7 +120,7 @@ export default function WeeklyCalendar({
               type="button"
               title="이번 주로 돌아가기"
               onClick={() => setWeekStart(getCurrentWeekStart())}
-              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors hover:bg-primary/15 ${
+              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors hover:bg-primary/15 max-[480px]:px-2.5 max-[480px]:text-xs ${
                 isCurrentWeek
                   ? "bg-primary-light-active text-primary-hover"
                   : "bg-primary-light text-text"
@@ -132,7 +132,7 @@ export default function WeeklyCalendar({
               type="button"
               aria-label="다음 주"
               onClick={() => setWeekStart((w) => shiftWeek(w, 1))}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light max-[480px]:h-8 max-[480px]:w-8"
             >
               ›
             </button>

@@ -17,21 +17,21 @@ export default function AppHeader({ nickname, showAdminLink }: Props) {
   }
 
   return (
-    <header className="flex items-center justify-between bg-primary px-6 py-4">
+    <header className="flex items-center justify-between bg-primary px-6 py-4 max-[480px]:flex-wrap max-[480px]:gap-y-2 max-[480px]:px-4 max-[480px]:py-3">
       <div className="flex items-center gap-3">
-        <span className="text-[22px] font-extrabold tracking-tight text-white">
+        <span className="whitespace-nowrap text-[22px] font-extrabold tracking-tight text-white">
           UbSE
         </span>
         <span className="h-4 w-px bg-white/40" aria-hidden="true" />
-        <span className="text-[18px] font-semibold text-white">
+        <span className="whitespace-nowrap text-[18px] font-semibold text-white">
           ProfCheck
         </span>
       </div>
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex items-center gap-2 text-sm max-[480px]:w-full max-[480px]:justify-end">
         {showAdminLink && (
           <Link
             href="/admin"
-            className="rounded-md border border-white/50 px-4 py-1.5 font-medium text-white transition-colors hover:bg-white/10"
+            className="whitespace-nowrap rounded-md border border-white/50 px-4 py-1.5 font-medium text-white transition-colors hover:bg-white/10"
           >
             관리자
           </Link>
@@ -39,12 +39,12 @@ export default function AppHeader({ nickname, showAdminLink }: Props) {
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-md border border-white/50 px-4 py-1.5 font-medium text-white transition-colors hover:bg-white/10"
+          className="whitespace-nowrap rounded-md border border-white/50 px-4 py-1.5 font-medium text-white transition-colors hover:bg-white/10"
         >
           로그아웃
         </button>
         {nickname && (
-          <span className="rounded-full bg-white/20 px-4 py-1.5 font-medium text-white">
+          <span className="whitespace-nowrap rounded-full bg-white/20 px-4 py-1.5 font-medium text-white">
             {nickname}님
           </span>
         )}
