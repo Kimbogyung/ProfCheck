@@ -28,6 +28,7 @@ export default function WeeklyCalendar({
   const [timeOff, setTimeOff] = useState<TimeOffEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasPendingSelection, setHasPendingSelection] = useState(false);
 
   const weekDates = getWeekDates(weekStart);
   const isCurrentWeek = weekStart === getCurrentWeekStart();
@@ -207,23 +208,37 @@ export default function WeeklyCalendar({
         )}
 
         <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-6">
-          <DayToggleBar
-            weekDates={weekDates}
-            dailyStatus={dailyStatus}
-            onToggle={handleToggleDay}
-            isLoading={isLoading}
-          />
+          {/* DayToggleBar와 TimeGrid를 하나의 overflow-x-auto 컨테이너로 묶어서
+              물리적으로 같은 스크롤 영역을 공유하게 한다. 이렇게 하면 모바일에서
+              어느 쪽을 스와이프하든 둘 다 항상 같은 위치로 움직인다. */}
+          <div className="overflow-x-auto">
+            <div className="min-w-[560px]">
+              <DayToggleBar
+                weekDates={weekDates}
+                dailyStatus={dailyStatus}
+                onToggle={handleToggleDay}
+                isLoading={isLoading}
+              />
 
-          <TimeGrid
-            weekDates={weekDates}
-            dailyStatus={dailyStatus}
-            timeOff={timeOff}
-            currentUserId={currentUserId}
-            isAdmin={isAdmin}
-            onCreateTimeOff={handleCreateTimeOff}
-            onDeleteTimeOff={handleDeleteTimeOff}
-            isLoading={isLoading}
-          />
+              <TimeGrid
+                weekDates={weekDates}
+                dailyStatus={dailyStatus}
+                timeOff={timeOff}
+                currentUserId={currentUserId}
+                isAdmin={isAdmin}
+                onCreateTimeOff={handleCreateTimeOff}
+                onDeleteTimeOff={handleDeleteTimeOff}
+                isLoading={isLoading}
+                onPendingChange={setHasPendingSelection}
+              />
+            </div>
+          </div>
+
+          <p className="h-4 text-center text-xs text-text-soft">
+            {hasPendingSelection
+              ? "종료 시간을 클릭하면 부재로 등록됩니다. 다른 날짜를 클릭하면 취소됩니다."
+              : ""}
+          </p>
         </div>
       </div>
     </div>
