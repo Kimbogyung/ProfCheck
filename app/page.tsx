@@ -12,6 +12,7 @@ export default async function HomePage() {
     <main className="flex flex-1 flex-col">
       <WeeklyCalendar
         currentUserId={session.userId}
+        nickname={session.nickname ?? ""}
         isAdmin={session.role === "ADMIN"}
       />
     </main>

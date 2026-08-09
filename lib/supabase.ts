@@ -6,6 +6,7 @@ export type UserRow = {
   password_hash: string;
   role: "MEMBER" | "ADMIN";
   password_changed: boolean;
+  nickname: string | null;
   created_at: string;
   updated_at: string;
 };

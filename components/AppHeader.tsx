@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type Props = {
+  nickname?: string | null;
   showAdminLink?: boolean;
 };
 
-export default function AppHeader({ showAdminLink }: Props) {
+export default function AppHeader({ nickname, showAdminLink }: Props) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -16,16 +17,21 @@ export default function AppHeader({ showAdminLink }: Props) {
   }
 
   return (
-    <header className="flex items-center justify-between border-b border-border bg-surface px-6 py-4">
-      <div className="flex items-center gap-2">
-        <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
-        <span className="text-lg font-bold text-text">ProfCheck</span>
+    <header className="flex items-center justify-between bg-primary px-6 py-4">
+      <div className="flex items-center gap-3">
+        <span className="text-[22px] font-extrabold tracking-tight text-white">
+          UbSE
+        </span>
+        <span className="h-4 w-px bg-white/40" aria-hidden="true" />
+        <span className="text-[18px] font-semibold text-white">
+          ProfCheck
+        </span>
       </div>
       <div className="flex items-center gap-2 text-sm">
         {showAdminLink && (
           <Link
             href="/admin"
-            className="rounded-lg bg-primary-light px-4 py-1.5 font-medium text-primary-hover transition-colors hover:bg-primary/20"
+            className="rounded-md border border-white/50 px-4 py-1.5 font-medium text-white transition-colors hover:bg-white/10"
           >
             관리자
           </Link>
@@ -33,10 +39,15 @@ export default function AppHeader({ showAdminLink }: Props) {
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-lg border border-border bg-transparent px-4 py-1.5 font-medium text-text-soft transition-colors hover:bg-primary-light"
+          className="rounded-md border border-white/50 px-4 py-1.5 font-medium text-white transition-colors hover:bg-white/10"
         >
           로그아웃
         </button>
+        {nickname && (
+          <span className="rounded-full bg-white/20 px-4 py-1.5 font-medium text-white">
+            {nickname}님
+          </span>
+        )}
       </div>
     </header>
   );

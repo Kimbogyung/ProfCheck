@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
   const { data: user, error } = await supabase
     .from("users")
-    .select("id, student_id, password_hash, role, password_changed")
+    .select("id, student_id, password_hash, role, password_changed, nickname")
     .eq("student_id", studentId)
     .maybeSingle();
 
@@ -36,8 +36,11 @@ export async function POST(request: NextRequest) {
     studentId: user.student_id,
     role: user.role,
     passwordChanged: user.password_changed,
+    nickname: user.nickname,
   });
   await setSessionCookie(token);
 
-  return NextResponse.json({ mustChangePassword: !user.password_changed });
+  return NextResponse.json({
+    mustChangePassword: !user.password_changed || !user.nickname,
+  });
 }

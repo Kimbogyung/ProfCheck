@@ -141,7 +141,7 @@ export default function TimeGrid({
                         : "border-border bg-surface"
                     } ${
                       isPendingStart
-                        ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                        ? "ring-2 ring-primary ring-offset-1 ring-offset-canvas"
                         : ""
                     } ${
                       isBlocked

@@ -37,15 +37,20 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-background px-4">
+    <main className="flex flex-1 flex-col items-center justify-center gap-6 bg-canvas px-4">
+      <div className="flex items-center gap-3">
+        <span className="text-2xl font-extrabold tracking-tight text-primary">
+          UbSE
+        </span>
+        <span className="h-5 w-px bg-border" />
+        <span className="text-lg font-semibold text-text">ProfCheck</span>
+      </div>
+
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-surface p-8"
+        className="w-full max-w-sm space-y-5 rounded-2xl border border-border bg-surface p-8 shadow-sm"
       >
-        <div className="text-center">
-          <span className="text-2xl font-bold text-text">ProfCheck</span>
-          <p className="mt-1 text-sm text-text-soft">로그인</p>
-        </div>
+        <h1 className="text-center text-sm text-text-soft">로그인</h1>
 
         <div className="space-y-1.5">
           <label
@@ -61,7 +66,7 @@ export default function LoginPage() {
             autoComplete="username"
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text outline-none focus:border-primary"
+            className="w-full rounded-lg border border-border bg-canvas px-3 py-2 text-sm text-text outline-none focus:border-primary"
           />
         </div>
 
@@ -79,7 +84,7 @@ export default function LoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text outline-none focus:border-primary"
+            className="w-full rounded-lg border border-border bg-canvas px-3 py-2 text-sm text-text outline-none focus:border-primary"
           />
         </div>
 

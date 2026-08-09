@@ -14,10 +14,15 @@ import type { DailyStatusEntry, TimeOffEntry } from "@/lib/types";
 
 type Props = {
   currentUserId: string;
+  nickname: string;
   isAdmin?: boolean;
 };
 
-export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
+export default function WeeklyCalendar({
+  currentUserId,
+  nickname,
+  isAdmin,
+}: Props) {
   const [weekStart, setWeekStart] = useState(() => getCurrentWeekStart());
   const [dailyStatus, setDailyStatus] = useState<DailyStatusEntry[]>([]);
   const [timeOff, setTimeOff] = useState<TimeOffEntry[]>([]);
@@ -89,49 +94,51 @@ export default function WeeklyCalendar({ currentUserId, isAdmin }: Props) {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-background">
-      <AppHeader showAdminLink={isAdmin} />
+    <div className="flex flex-1 flex-col bg-canvas">
+      <AppHeader nickname={nickname} showAdminLink={isAdmin} />
 
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-10">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-text">이번 주 교수님 일정</h1>
-          <p className="mt-1.5 text-sm text-text-soft">
-            색이 칠해진 시간대만 부재로 확인된 시간이에요
-          </p>
-        </div>
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-8">
+        <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:flex-row sm:items-center">
+          <div className="flex items-center gap-3">
+            <p className="text-lg font-bold text-text">{nickname}님, 안녕하세요</p>
+            <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">
+              {isAdmin ? "ADMIN" : "MEMBER"}
+            </span>
+          </div>
 
-        <div className="flex items-center justify-center gap-3">
-          <button
-            type="button"
-            aria-label="이전 주"
-            onClick={() => setWeekStart((w) => shiftWeek(w, -1))}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            title="이번 주로 돌아가기"
-            onClick={() => setWeekStart(getCurrentWeekStart())}
-            className="rounded-lg bg-primary-light px-4 py-1.5 text-sm font-medium text-text transition-colors hover:bg-primary/15"
-          >
-            {formatWeekRangeLabel(weekDates)}
-          </button>
-          <button
-            type="button"
-            aria-label="다음 주"
-            onClick={() => setWeekStart((w) => shiftWeek(w, 1))}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light"
-          >
-            ›
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="이전 주"
+              onClick={() => setWeekStart((w) => shiftWeek(w, -1))}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              title="이번 주로 돌아가기"
+              onClick={() => setWeekStart(getCurrentWeekStart())}
+              className="rounded-lg bg-primary-light px-4 py-1.5 text-sm font-medium text-text transition-colors hover:bg-primary/15"
+            >
+              {formatWeekRangeLabel(weekDates)}
+            </button>
+            <button
+              type="button"
+              aria-label="다음 주"
+              onClick={() => setWeekStart((w) => shiftWeek(w, 1))}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-soft transition-colors hover:bg-primary-light"
+            >
+              ›
+            </button>
+          </div>
         </div>
 
         {error && (
           <p className="text-center text-sm text-red-500">{error}</p>
         )}
 
-        <div className="rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-6">
           <DayToggleBar
             weekDates={weekDates}
             dailyStatus={dailyStatus}

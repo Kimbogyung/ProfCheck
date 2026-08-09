@@ -12,6 +12,7 @@ export type SessionPayload = {
   role: "MEMBER" | "ADMIN";
   // JWT 필드에는 없지만 middleware의 강제 리다이렉트 판단에 필요해서 payload에 포함시킴
   passwordChanged: boolean;
+  nickname: string | null;
 };
 
 function getSecretKey() {

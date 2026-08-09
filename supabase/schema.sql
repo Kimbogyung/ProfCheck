@@ -9,6 +9,7 @@ create table users (
   password_hash    text not null,
   role             role not null default 'MEMBER',
   password_changed boolean not null default false, -- 최초 비번 변경 완료 여부
+  nickname         text,                      -- 최초 설정 화면에서 입력 (nullable)
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );

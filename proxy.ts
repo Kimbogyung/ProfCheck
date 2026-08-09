@@ -34,7 +34,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (!session.passwordChanged && pathname !== "/change-password") {
+  if (
+    (!session.passwordChanged || !session.nickname) &&
+    pathname !== "/change-password"
+  ) {
     return NextResponse.redirect(new URL("/change-password", request.url));
   }
 
