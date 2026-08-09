@@ -100,11 +100,11 @@ export default function WeeklyCalendar({
 
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:flex-row sm:items-center">
-          <div className="flex items-center gap-3">
-            <p className="text-lg font-bold text-text">{nickname}님, 안녕하세요</p>
-            <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">
-              {isAdmin ? "ADMIN" : "MEMBER"}
-            </span>
+          <div>
+            <p className="text-lg font-bold text-text">이번 주 교수님 일정</p>
+            <p className="mt-1 text-sm text-text-soft">
+              색이 칠해진 시간대만 교수님 부재 확인된 시간입니다
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
