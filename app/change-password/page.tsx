@@ -81,7 +81,7 @@ export default function ChangePasswordPage() {
             htmlFor="nickname"
             className="block text-sm font-medium text-text"
           >
-            닉네임
+            이름
           </label>
           <input
             id="nickname"
